@@ -44,3 +44,66 @@
     });
   }
 })();
+
+// Formulario de contacto: arma el mensaje y abre WhatsApp o el correo
+(function () {
+  "use strict";
+  var WA = "573207249502";
+  var MAIL = "vortexinnovation2026@gmail.com";
+  var form = document.getElementById("contactForm");
+  var note = document.getElementById("formNote");
+  if (!form) return;
+
+  var via = "whatsapp";
+  Array.prototype.forEach.call(form.querySelectorAll("button[data-via]"), function (b) {
+    b.addEventListener("click", function () { via = b.getAttribute("data-via"); });
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = form.elements.name.value.trim();
+    var business = form.elements.business.value.trim();
+    var need = form.elements.need.value;
+    var msg = form.elements.message.value.trim();
+
+    if (!name) {
+      form.elements.name.setAttribute("aria-invalid", "true");
+      form.elements.name.focus();
+      note.textContent = "Escribe tu nombre para continuar.";
+      note.className = "form-note err";
+      return;
+    }
+    form.elements.name.removeAttribute("aria-invalid");
+    note.className = "form-note";
+
+    var lines = ["Hola, soy " + name + "."];
+    if (business) lines.push("Mi negocio: " + business + ".");
+    lines.push("Necesito: " + need + ".");
+    if (msg) lines.push("", msg);
+    var text = lines.join("\n");
+
+    if (via === "email") {
+      var url = "mailto:" + MAIL + "?subject=" + encodeURIComponent("Consulta de " + name + " (página web)") + "&body=" + encodeURIComponent(text);
+      window.location.href = url;
+      note.textContent = "Si no se abrió tu correo, escríbenos a " + MAIL + ".";
+    } else {
+      window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(text), "_blank", "noopener");
+      note.textContent = "Se abrió WhatsApp con tu mensaje. Solo falta enviarlo.";
+    }
+  });
+
+  // Copiar correo
+  var copy = document.getElementById("copyMail");
+  if (copy) {
+    copy.addEventListener("click", function () {
+      var v = copy.getAttribute("data-copy");
+      var done = function () {
+        copy.textContent = "Copiado";
+        setTimeout(function () { copy.textContent = "Copiar"; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(v).then(done, function () {});
+      }
+    });
+  }
+})();
